@@ -20,6 +20,7 @@
     <module>gateway-service</module>
     <module>eureka-service</module>
     <module>config-service</module>
+    <module>iam-service</module>
   </modules>
 
   <properties>
