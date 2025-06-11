@@ -1,0 +1,2 @@
+# fleet-management-microservices
+This repository contains the microservices-based backend for a Fleet Management application. Designed following Domain-Driven Design (DDD) principles and built around clearly defined bounded contexts, the system embraces a decentralized architecture to enhance scalability, maintainability, and independent deployment of services. Each microservice encapsulates a specific business domain, ensuring a clean separation of concerns and facilitating agile development and integration.
