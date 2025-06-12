@@ -1,5 +1,7 @@
 package com.iam.service.infrastructure.tokens.jwt.services;
 
+import com.iam.service.domain.model.aggregates.User;
+import com.iam.service.infrastructure.persistence.jpa.repositories.UserRepository;
 import com.iam.service.infrastructure.tokens.jwt.BearerTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -14,11 +16,13 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
- * The token service implementation.
- * This class is responsible for generating JWT tokens.
+ * JWT Token Service Implementation.
+ * This class is responsible for generating JWT tokens with user roles included.
  */
 @Service
 public class TokenServiceImpl implements BearerTokenService {
@@ -30,8 +34,15 @@ public class TokenServiceImpl implements BearerTokenService {
     @Value(("${authorization.jwt.expiration.days}"))
     private int expirationDays;
 
+    private final UserRepository userRepository;
+
+    public TokenServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     /**
      * Get the signing key.
+     *
      * @return the {@link SecretKey} signing key
      */
     private SecretKey getSigningKey() {
@@ -40,7 +51,8 @@ public class TokenServiceImpl implements BearerTokenService {
     }
 
     /**
-     * Build the token with default parameters.
+     * Build the token with default parameters and include user roles.
+     *
      * @param username the username
      * @return the token
      */
@@ -49,6 +61,27 @@ public class TokenServiceImpl implements BearerTokenService {
         var expiration = DateUtils.addDays(issuedAt, expirationDays);
         var key = getSigningKey();
 
+        // Obtener el usuario y sus roles para incluirlos en el token
+        var userOptional = userRepository.findByEmail(username);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            // Extraer los nombres de los roles
+            List<String> roles = user.getRoles().stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.toList());
+
+            // Construir el token con los roles incluidos
+            return Jwts.builder()
+                    .subject(username)
+                    .issuedAt(issuedAt)
+                    .expiration(expiration)
+                    .claim("roles", roles)  // Incluimos los roles en el token
+                    .signWith(key)
+                    .compact();
+        }
+
+        // Fallback si no se encuentra el usuario (no debería ocurrir)
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(issuedAt)
@@ -59,6 +92,7 @@ public class TokenServiceImpl implements BearerTokenService {
 
     /**
      * Extract all claims from the token.
+     *
      * @param token the token
      * @return the {@link Claims} claims
      */
@@ -72,6 +106,7 @@ public class TokenServiceImpl implements BearerTokenService {
 
     /**
      * Extract the claim from the token.
+     *
      * @param token          the token
      * @param claimResolvers the {@link Function} claim resolvers
      * @param <T>            the type of the claim
@@ -83,6 +118,7 @@ public class TokenServiceImpl implements BearerTokenService {
 
     /**
      * Generate the bearer token.
+     *
      * @param authentication the {@link Authentication} authentication
      * @return the bearer token
      */
@@ -93,6 +129,7 @@ public class TokenServiceImpl implements BearerTokenService {
 
     /**
      * Generate a token for the given username.
+     *
      * @param username the username
      * @return the generated token
      */
@@ -103,6 +140,7 @@ public class TokenServiceImpl implements BearerTokenService {
 
     /**
      * Extract the username from the token.
+     *
      * @param token the token
      * @return the username
      */
@@ -113,6 +151,7 @@ public class TokenServiceImpl implements BearerTokenService {
 
     /**
      * Validate the token.
+     *
      * @param token the token
      * @return true if the token is valid, false otherwise
      */

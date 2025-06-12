@@ -74,7 +74,7 @@ public class ProfilesController {
      * @param resource the resource containing the updated profile data
      * @return ResponseEntity containing the updated ProfileResource or an error response
      */
-    @PutMapping(value = "/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{userId}/profile", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a profile")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
