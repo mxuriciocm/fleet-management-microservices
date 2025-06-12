@@ -21,6 +21,26 @@ spring:
           physical-strategy: com.example.iam.shared.infrastructure.persistence.jpa.configuration.strategy.SnakeCaseWithPluralizedTablePhysicalNamingStrategy
   config:
     import: optional:configserver:http://localhost:8888
+  cloud:
+    function:
+      definition: userCreated
+    stream:
+      bindings:
+        userCreated-in-0:
+          destination: user-events
+          content-type: application/json
+          group: profiles-service-group
+          binder: rabbit
+      binders:
+        rabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: localhost
+                port: 5672
+                username: guest
+                password: guest
 
 
 eureka:

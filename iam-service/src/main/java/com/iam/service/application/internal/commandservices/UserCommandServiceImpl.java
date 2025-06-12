@@ -7,10 +7,14 @@ import com.iam.service.domain.model.commands.ChangeEmailCommand;
 import com.iam.service.domain.model.commands.ChangePasswordCommand;
 import com.iam.service.domain.model.commands.SignInCommand;
 import com.iam.service.domain.model.commands.SignUpCommand;
+import com.iam.service.domain.model.events.UserCreatedEvent;
 import com.iam.service.domain.services.UserCommandService;
 import com.iam.service.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.iam.service.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,10 +29,13 @@ import java.util.Optional;
  */
 @Service
 public class UserCommandServiceImpl implements UserCommandService {
+    private static final Logger log = LoggerFactory.getLogger(UserCommandServiceImpl.class);
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final HashingService hashingService;
     private final TokenService tokenService;
+    private final StreamBridge streamBridge;
 
     /**
      * Constructor.
@@ -38,11 +45,12 @@ public class UserCommandServiceImpl implements UserCommandService {
      * @param hashingService the {@link HashingService} hashing service.
      * @param tokenService the {@link TokenService} token service.
      */
-    public UserCommandServiceImpl(UserRepository userRepository, RoleRepository roleRepository, HashingService hashingService, TokenService tokenService) {
+    public UserCommandServiceImpl(UserRepository userRepository, RoleRepository roleRepository, HashingService hashingService, TokenService tokenService, StreamBridge streamBridge) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.hashingService = hashingService;
         this.tokenService = tokenService;
+        this.streamBridge = streamBridge;
     }
 
     // inherited javadoc
@@ -54,19 +62,13 @@ public class UserCommandServiceImpl implements UserCommandService {
         var user = new User(command.username(), hashingService.encode(command.password()), roles);
         var savedUser = userRepository.save(user);
 
-        /**
         try {
-            // Create user profile automatically after user creation with null values
-            Long profileId = profileContextFacade.createProfile(
-                    savedUser.getId(),
-                    null,
-                    null,
-                    null
-            );
+            UserCreatedEvent event = new UserCreatedEvent(savedUser.getId(), savedUser.getEmail());
+            streamBridge.send("user-events", event);
+            log.info("User created event published for userId: {}", savedUser.getId());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to publish UserCreatedEvent for userId: {}", savedUser.getId(), e);
         }
-         */
         return Optional.of(savedUser);
     }
 
