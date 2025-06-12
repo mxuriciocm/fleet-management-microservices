@@ -21,6 +21,7 @@
     <module>eureka-service</module>
     <module>config-service</module>
     <module>iam-service</module>
+    <module>profiles-service</module>
   </modules>
 
   <properties>
