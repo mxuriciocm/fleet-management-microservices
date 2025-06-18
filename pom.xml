@@ -22,6 +22,7 @@
     <module>config-service</module>
     <module>iam-service</module>
     <module>profiles-service</module>
+    <module>vehicles-service</module>
   </modules>
 
   <properties>
