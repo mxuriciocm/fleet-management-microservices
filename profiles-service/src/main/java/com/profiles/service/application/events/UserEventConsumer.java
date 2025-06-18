@@ -29,8 +29,19 @@ public class UserEventConsumer {
     @Bean
     public Consumer<UserCreatedEvent> userCreated() {
         return event -> {
+            if (event == null) {
+                log.error("Received null UserCreatedEvent");
+                return;
+            }
+
             log.info("Received UserCreatedEvent for userId: {}", event.userId());
             try {
+                // Validación básica de datos
+                if (event.userId() == null) {
+                    log.error("Invalid UserCreatedEvent: userId is null");
+                    return;
+                }
+
                 var command = new CreateProfileCommand(
                         event.userId(),
                         null,
@@ -38,11 +49,14 @@ public class UserEventConsumer {
                         null
                 );
                 var profile = profileCommandService.handle(command);
-                log.info("Profile created for userId: {}", event.userId());
+                if (profile.isPresent()) {
+                    log.info("Profile created successfully for userId: {}", event.userId());
+                } else {
+                    log.warn("Profile creation returned empty result for userId: {}", event.userId());
+                }
             } catch (Exception e) {
                 log.error("Failed to create profile for userId: {}", event.userId(), e);
             }
         };
     }
 }
-
