@@ -57,6 +57,19 @@ spring:
                       - ROLE_MANAGER
                       - ROLE_ADMIN
 
+            - id: vehicles-service
+              uri: lb://vehicles-service
+              predicates:
+                - Path=/api/v1/vehicles/**
+              filters:
+                - RewritePath=/api/v1/vehicles/(?<segment>.*), /api/v1/vehicles/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_CARRIER
+                      - ROLE_MANAGER
+                      - ROLE_ADMIN
+
           globalcors:
             cors-configurations:
               '[/**]':
@@ -73,6 +86,13 @@ spring:
           default-filters:
             - DedupeResponseHeader=Access-Control-Allow-Origin
 
+logging:
+  level:
+    com.gateway.service.filter: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG
+
 authorization:
   jwt:
     secret: ${JWT_SECRET:WriteHereYourSecretStringForTokenSigningCredentials}
@@ -85,4 +105,3 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
-
