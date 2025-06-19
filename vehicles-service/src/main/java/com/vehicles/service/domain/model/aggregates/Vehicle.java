@@ -1,6 +1,7 @@
 package com.vehicles.service.domain.model.aggregates;
 
 
+import com.vehicles.service.domain.model.commands.CreateVehicleCommand;
 import com.vehicles.service.domain.model.valueobjects.VehicleStatus;
 import com.vehicles.service.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Column;
@@ -56,6 +57,14 @@ public class Vehicle extends AuditableAbstractAggregateRoot<Vehicle> {
     }
 
     public Vehicle() {}
+
+    public Vehicle(CreateVehicleCommand command) {
+        this.licensePlate = command.licensePlate();
+        this.brand = command.brand();
+        this.model = command.model();
+        this.status = VehicleStatus.ACTIVE;
+        this.managerId = command.managerId();
+    }
 
     public Vehicle assignCarrier(Long carrierId) {
         this.carrierId = carrierId;

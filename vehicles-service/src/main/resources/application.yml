@@ -1,0 +1,85 @@
+server:
+  port: 8095
+
+spring:
+  application:
+    name: vehicles-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/vehicles_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: mauriciochacon
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        naming:
+          physical-strategy: com.vehicles.service.shared.infrastructure.persistence.jpa.configuration.strategy.SnakeCaseWithPluralizedTablePhysicalNamingStrategy
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    function:
+      definition: userCreatedEvent;userUpdatedEvent;profileCreatedEvent
+    stream:
+      bindings:
+        userCreatedEvent-in-0:
+          destination: user-events
+          content-type: application/json
+          group: vehicles-service-group
+          binder: rabbit
+        userUpdatedEvent-in-0:
+          destination: user-update-events
+          content-type: application/json
+          group: vehicles-service-group
+          binder: rabbit
+        profileCreatedEvent-in-0:
+          destination: profile-events
+          content-type: application/json
+          group: vehicles-service-group
+          binder: rabbit
+        vehicleCreatedEvent-out-0:
+          destination: vehicle-events
+          content-type: application/json
+          binder: rabbit
+        vehicleUpdatedEvent-out-0:
+          destination: vehicle-update-events
+          content-type: application/json
+          binder: rabbit
+      binders:
+        rabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: localhost
+                port: 5672
+                username: guest
+                password: guest
+      rabbit:
+        bindings:
+          userCreatedEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              dlq-ttl: 60000
+              requeue-rejected: false
+          userUpdatedEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              dlq-ttl: 60000
+              requeue-rejected: false
+          profileCreatedEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              dlq-ttl: 60000
+              requeue-rejected: false
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
