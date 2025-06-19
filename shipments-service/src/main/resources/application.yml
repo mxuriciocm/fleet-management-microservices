@@ -1,0 +1,18 @@
+server:
+  port: 8070
+spring:
+  application:
+    name: shipments-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/shipments_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: mauriciochacon
+
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

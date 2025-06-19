@@ -23,6 +23,7 @@
     <module>iam-service</module>
     <module>profiles-service</module>
     <module>vehicles-service</module>
+    <module>shipments-service</module>
   </modules>
 
   <properties>
