@@ -61,27 +61,24 @@ public class TokenServiceImpl implements BearerTokenService {
         var expiration = DateUtils.addDays(issuedAt, expirationDays);
         var key = getSigningKey();
 
-        // Obtener el usuario y sus roles para incluirlos en el token
         var userOptional = userRepository.findByEmail(username);
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            // Extraer los nombres de los roles
             List<String> roles = user.getRoles().stream()
                 .map(role -> role.getName().name())
                 .collect(Collectors.toList());
 
-            // Construir el token con los roles incluidos
             return Jwts.builder()
                     .subject(username)
                     .issuedAt(issuedAt)
                     .expiration(expiration)
-                    .claim("roles", roles)  // Incluimos los roles en el token
+                    .claim("id", user.getId())
+                    .claim("roles", roles)
                     .signWith(key)
                     .compact();
         }
 
-        // Fallback si no se encuentra el usuario (no debería ocurrir)
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(issuedAt)
