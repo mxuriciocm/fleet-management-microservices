@@ -70,6 +70,19 @@ spring:
                       - ROLE_MANAGER
                       - ROLE_ADMIN
 
+            - id: shipments-service
+              uri: lb://shipments-service
+              predicates:
+                - Path=/api/v1/shipments/**
+              filters:
+                - RewritePath=/api/v1/shipments/(?<segment>.*), /api/v1/shipments/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_CARRIER
+                      - ROLE_MANAGER
+                      - ROLE_ADMIN
+
           globalcors:
             cors-configurations:
               '[/**]':
