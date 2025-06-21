@@ -24,6 +24,7 @@
     <module>profiles-service</module>
     <module>vehicles-service</module>
     <module>shipments-service</module>
+    <module>issues-service</module>
   </modules>
 
   <properties>
