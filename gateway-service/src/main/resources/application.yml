@@ -70,6 +70,19 @@ spring:
                       - ROLE_MANAGER
                       - ROLE_ADMIN
 
+            - id: issues-service
+              uri: lb://issues-service
+              predicates:
+                - Path=/api/v1/issues/**
+              filters:
+                - RewritePath=/api/v1/issues/(?<segment>.*), /api/v1/issues/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_CARRIER
+                      - ROLE_MANAGER
+                      - ROLE_ADMIN
+
             - id: shipments-service
               uri: lb://shipments-service
               predicates:
