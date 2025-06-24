@@ -32,6 +32,13 @@ spring:
                       - ROLE_ADMIN
                       - ROLE_MANAGER
 
+            - id: iam-carriers-signup
+              uri: lb://iam-service
+              predicates:
+                - Path=/api/v1/carriers/sign-up
+              filters:
+                - RewritePath=/api/v1/carriers/(?<segment>.*), /api/v1/carriers/$\{segment}
+
             - id: iam-roles
               uri: lb://iam-service
               predicates:
@@ -123,7 +130,7 @@ authorization:
   jwt:
     secret: ${JWT_SECRET:WriteHereYourSecretStringForTokenSigningCredentials}
   routes:
-    public-paths: /api/v1/authentication/**,/actuator/**,/v3/api-docs/**,/swagger-ui/**
+    public-paths: /api/v1/authentication/**,/api/v1/carriers/sign-up,/actuator/**,/v3/api-docs/**,/swagger-ui/**
 
 eureka:
   client:

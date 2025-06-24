@@ -4,6 +4,7 @@ import com.iam.service.domain.model.aggregates.User;
 import com.iam.service.domain.model.queries.GetAllUsersQuery;
 import com.iam.service.domain.model.queries.GetUserByEmailQuery;
 import com.iam.service.domain.model.queries.GetUserByIdQuery;
+import com.iam.service.domain.model.queries.GetCarriersByManagerQuery;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,4 +40,12 @@ public interface UserQueryService {
      * @return an optional of user if the user was found
      */
     Optional<User> handle(GetUserByEmailQuery query);
+
+    /**
+     * Handle get carriers by manager query.
+     *
+     * @param query the query containing the manager ID
+     * @return a list of users with carrier role created by the specified manager
+     */
+    List<User> handle(GetCarriersByManagerQuery query);
 }

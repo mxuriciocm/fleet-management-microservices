@@ -3,6 +3,7 @@ package com.iam.service.domain.services;
 import com.iam.service.domain.model.aggregates.User;
 import com.iam.service.domain.model.commands.ChangeEmailCommand;
 import com.iam.service.domain.model.commands.ChangePasswordCommand;
+import com.iam.service.domain.model.commands.RegisterCarrierCommand;
 import com.iam.service.domain.model.commands.SignInCommand;
 import com.iam.service.domain.model.commands.SignUpCommand;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -50,6 +51,14 @@ public interface UserCommandService {
      * @throws RuntimeException if the password is incorrect, user not found, or new email already exists
      */
     Optional<User> handle(ChangeEmailCommand command);
+
+    /**
+     * Handle register carrier command.
+     *
+     * @param command the command containing carrier details and manager ID
+     * @return an optional of user if the carrier registration was successful
+     */
+    Optional<User> handle(RegisterCarrierCommand command);
 
     /**
      * Delete a user by ID.

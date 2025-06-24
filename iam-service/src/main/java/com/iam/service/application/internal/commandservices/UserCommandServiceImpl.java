@@ -7,7 +7,9 @@ import com.iam.service.domain.model.commands.ChangeEmailCommand;
 import com.iam.service.domain.model.commands.ChangePasswordCommand;
 import com.iam.service.domain.model.commands.SignInCommand;
 import com.iam.service.domain.model.commands.SignUpCommand;
+import com.iam.service.domain.model.commands.RegisterCarrierCommand;
 import com.iam.service.domain.model.events.UserCreatedEvent;
+import com.iam.service.domain.model.valueobjects.Roles;
 import com.iam.service.domain.services.UserCommandService;
 import com.iam.service.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.iam.service.infrastructure.persistence.jpa.repositories.UserRepository;
@@ -18,6 +20,7 @@ import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * User command service implementation.
@@ -123,5 +126,43 @@ public class UserCommandServiceImpl implements UserCommandService {
             log.error("Error deleting user with ID: {}", userId, e);
             throw new RuntimeException("Failed to delete user: " + e.getMessage());
         }
+    }
+
+    @Override
+    public Optional<User> handle(RegisterCarrierCommand command) {
+        if (userRepository.existsByEmail(command.username())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        // Obtener los roles (asegurándonos que incluya ROLE_CARRIER)
+        var roles = command.roles().stream()
+                .map(role -> roleRepository.findByName(role.getName())
+                    .orElseThrow(() -> new RuntimeException("Role name not found")))
+                .collect(Collectors.toList());
+
+        // Verificar que al menos tenga el rol CARRIER
+        boolean hasCarrierRole = roles.stream()
+                .anyMatch(role -> role.getName() == Roles.ROLE_CARRIER);
+
+        if (!hasCarrierRole) {
+            roles.add(roleRepository.findByName(Roles.ROLE_CARRIER)
+                    .orElseThrow(() -> new RuntimeException("Carrier role not found")));
+        }
+
+        // Crear el usuario carrier con referencia al manager que lo creó
+        var user = new User(command.username(), hashingService.encode(command.password()), roles, command.managerId());
+        var savedUser = userRepository.save(user);
+
+        // Publicar evento de usuario creado
+        try {
+            UserCreatedEvent event = new UserCreatedEvent(savedUser.getId(), savedUser.getEmail());
+            streamBridge.send("user-events", event);
+            log.info("User created event published for carrier userId: {}, created by manager: {}",
+                    savedUser.getId(), command.managerId());
+        } catch (Exception e) {
+            log.error("Failed to publish UserCreatedEvent for userId: {}", savedUser.getId(), e);
+        }
+
+        return Optional.of(savedUser);
     }
 }

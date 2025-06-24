@@ -33,6 +33,9 @@ public class User extends AuditableAbstractAggregateRoot<User> {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+    @Column(name = "created_by")
+    private Long createdBy;
+
     /**
      * Default constructor.
      */
@@ -63,6 +66,19 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     public User(String email, String password, List<Role> roles) {
         this(email, password);
         addRoles(roles);
+    }
+
+    /**
+     * Constructor with email, password, roles and createdBy.
+     *
+     * @param email the email
+     * @param password the password
+     * @param roles the roles
+     * @param createdBy the ID of the manager who created this user (for carriers)
+     */
+    public User(String email, String password, List<Role> roles, Long createdBy) {
+        this(email, password, roles);
+        this.createdBy = createdBy;
     }
 
     /**
