@@ -105,4 +105,23 @@ public class UserCommandServiceImpl implements UserCommandService {
         var savedUser = userRepository.save(user);
         return Optional.of(savedUser);
     }
+
+    @Override
+    public boolean deleteUser(Long userId) {
+        log.info("Attempting to delete user with ID: {}", userId);
+        var userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            log.warn("Failed to delete user: User with ID {} not found", userId);
+            return false;
+        }
+
+        try {
+            userRepository.deleteById(userId);
+            log.info("User with ID: {} deleted successfully", userId);
+            return true;
+        } catch (Exception e) {
+            log.error("Error deleting user with ID: {}", userId, e);
+            throw new RuntimeException("Failed to delete user: " + e.getMessage());
+        }
+    }
 }

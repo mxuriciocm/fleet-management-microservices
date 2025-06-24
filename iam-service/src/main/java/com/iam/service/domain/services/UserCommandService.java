@@ -50,4 +50,13 @@ public interface UserCommandService {
      * @throws RuntimeException if the password is incorrect, user not found, or new email already exists
      */
     Optional<User> handle(ChangeEmailCommand command);
+
+    /**
+     * Delete a user by ID.
+     *
+     * @param userId the ID of the user to delete
+     * @return true if the user was deleted successfully, false otherwise
+     * @throws RuntimeException if the user could not be deleted
+     */
+    boolean deleteUser(Long userId);
 }
