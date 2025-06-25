@@ -82,16 +82,15 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
      * Assign a carrier to a vehicle.
      * @param vehicleId the vehicle id
      * @param carrierId the carrier id
-     * @return an Optional containing the updated vehicle if successful, or empty if not found
+     * @return an Optional containing the updated vehicle if successful, or empty if not found or if carrier already has a vehicle
      */
     @Override
     public Optional<Vehicle> handle(Long vehicleId, Long carrierId) {
+        if (vehicleRepository.findByCarrierId(carrierId).isPresent()) { return Optional.empty(); }
         return vehicleRepository.findById(vehicleId)
                 .map(vehicle -> {
                     vehicle.assignCarrier(carrierId);
                     var updatedVehicle = vehicleRepository.save(vehicle);
-
-                    // Publicar evento de vehículo actualizado con asignación de carrier
                     var event = new VehicleUpdatedEvent(
                         updatedVehicle.getId(),
                         null, // No se actualiza la placa
@@ -177,4 +176,3 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
         }
     }
 }
-
