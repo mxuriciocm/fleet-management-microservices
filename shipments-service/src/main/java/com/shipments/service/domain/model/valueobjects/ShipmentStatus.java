@@ -5,6 +5,7 @@ package com.shipments.service.domain.model.valueobjects;
  */
 public enum ShipmentStatus {
     PENDING,
+    ASSIGNED,
     IN_PROGRESS,
     COMPLETED,
     CANCELLED,

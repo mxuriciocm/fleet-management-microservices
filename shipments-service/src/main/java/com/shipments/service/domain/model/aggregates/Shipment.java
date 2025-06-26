@@ -37,6 +37,14 @@ public class Shipment extends AuditableAbstractAggregateRoot<Shipment> {
 
     private LocalDateTime completedDate;
 
+    @NotBlank
+    @Size(max = 100)
+    private String customerName;
+
+    @NotBlank
+    @Size(max = 20)
+    private String customerPhone;
+
     @NotNull
     private Long managerId;
 
@@ -49,13 +57,17 @@ public class Shipment extends AuditableAbstractAggregateRoot<Shipment> {
      * @param description description of the shipment
      * @param scheduledDate date when the shipment is scheduled
      * @param managerId id of the manager who owns this shipment
+     * @param customerName name of the customer
+     * @param customerPhone phone number of the customer
      */
-    public Shipment(String destination, String description, LocalDateTime scheduledDate, Long managerId){
+    public Shipment(String destination, String description, LocalDateTime scheduledDate, Long managerId, String customerName, String customerPhone){
         this.destination = destination;
         this.description = description;
         this.status = ShipmentStatus.PENDING;
         this.scheduledDate = scheduledDate;
         this.managerId = managerId;
+        this.customerName = customerName;
+        this.customerPhone = customerPhone;
     }
 
     public Shipment() {}
@@ -65,21 +77,31 @@ public class Shipment extends AuditableAbstractAggregateRoot<Shipment> {
         this.description = command.description();
         this.scheduledDate = command.scheduledDate();
         this.managerId = command.managerId();
+        this.customerName = command.customerName();
+        this.customerPhone = command.customerPhone();
         this.status = ShipmentStatus.PENDING;
     }
 
     public Shipment assignCarrier(Long carrierId) {
         this.carrierId = carrierId;
+        if (this.status == ShipmentStatus.PENDING) {
+            this.status = ShipmentStatus.ASSIGNED;
+        }
         return this;
     }
 
     public Shipment removeCarrier() {
         this.carrierId = null;
+        if (this.status == ShipmentStatus.ASSIGNED) {
+            this.status = ShipmentStatus.PENDING;
+        }
         return this;
     }
 
     public Shipment startShipment() {
-        if (this.status != ShipmentStatus.PENDING) { throw new IllegalStateException("Cannot start shipment that is not in PENDING status"); }
+        if (this.status != ShipmentStatus.PENDING && this.status != ShipmentStatus.ASSIGNED) {
+            throw new IllegalStateException("Cannot start shipment that is not in PENDING or ASSIGNED status");
+        }
         if (this.carrierId == null) { throw new IllegalStateException("Cannot start shipment without an assigned carrier"); }
         this.status = ShipmentStatus.IN_PROGRESS;
         this.startedDate = LocalDateTime.now();
@@ -100,12 +122,57 @@ public class Shipment extends AuditableAbstractAggregateRoot<Shipment> {
     }
 
     public Shipment changeStatus(ShipmentStatus status) {
-        if (this.status == ShipmentStatus.COMPLETED && status != ShipmentStatus.COMPLETED) { throw new IllegalStateException("Cannot change status of a completed shipment"); }
-        if (this.status == ShipmentStatus.PENDING && status == ShipmentStatus.PENDING) { throw new IllegalStateException("Cannot revert shipment status to PENDING"); }
-        if (this.status == ShipmentStatus.IN_PROGRESS && this.startedDate == null) { this.startedDate = LocalDateTime.now(); }
-        if (this.status == ShipmentStatus.COMPLETED && this.completedDate == null) { this.completedDate = LocalDateTime.now(); }
+        switch (this.status) {
+            case PENDING:
+                if (status != ShipmentStatus.PENDING &&
+                    status != ShipmentStatus.ASSIGNED &&
+                    status != ShipmentStatus.CANCELLED) {
+                    throw new IllegalStateException("From PENDING state, shipment can only transition to ASSIGNED or CANCELLED");
+                }
+                break;
+
+            case ASSIGNED:
+                if (status != ShipmentStatus.ASSIGNED &&
+                    status != ShipmentStatus.IN_PROGRESS &&
+                    status != ShipmentStatus.PENDING &&
+                    status != ShipmentStatus.CANCELLED) {
+                    throw new IllegalStateException("From ASSIGNED state, shipment can only transition to IN_PROGRESS, PENDING or CANCELLED");
+                }
+
+                if (status == ShipmentStatus.PENDING && this.carrierId != null) {
+                    throw new IllegalStateException("Cannot change status from ASSIGNED to PENDING without removing carrier");
+                }
+                break;
+
+            case IN_PROGRESS:
+                if (status != ShipmentStatus.IN_PROGRESS &&
+                    status != ShipmentStatus.COMPLETED &&
+                    status != ShipmentStatus.CANCELLED) {
+                    throw new IllegalStateException("From IN_PROGRESS state, shipment can only transition to COMPLETED or CANCELLED");
+                }
+                break;
+
+            case COMPLETED:
+                if (status != ShipmentStatus.COMPLETED) {
+                    throw new IllegalStateException("Cannot change status of a COMPLETED shipment");
+                }
+                break;
+
+            case CANCELLED:
+                if (status != ShipmentStatus.CANCELLED) {
+                    throw new IllegalStateException("Cannot change status of a CANCELLED shipment");
+                }
+                break;
+        }
+
+        if (status == ShipmentStatus.IN_PROGRESS && this.startedDate == null) {
+            this.startedDate = LocalDateTime.now();
+        }
+        if (status == ShipmentStatus.COMPLETED && this.completedDate == null) {
+            this.completedDate = LocalDateTime.now();
+        }
+
         this.status = status;
         return this;
     }
 }
-

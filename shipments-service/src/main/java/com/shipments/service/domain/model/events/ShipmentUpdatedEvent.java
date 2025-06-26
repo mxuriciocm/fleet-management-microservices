@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
  * @param status The status of the shipment (null if not changed)
  * @param scheduledDate The scheduled date of the shipment (null if not changed)
  * @param carrierId The ID of the carrier assigned to the shipment (null if not assigned/changed)
+ * @param customerName The name of the customer (null if not changed)
+ * @param customerPhone The phone number of the customer (null if not changed)
  */
 public record ShipmentUpdatedEvent(
     Long shipmentId,
@@ -19,5 +21,7 @@ public record ShipmentUpdatedEvent(
     String description,
     ShipmentStatus status,
     LocalDateTime scheduledDate,
-    Long carrierId
+    Long carrierId,
+    String customerName,
+    String customerPhone
 ) {}

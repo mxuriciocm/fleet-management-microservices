@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
  * @param status The status of the shipment
  * @param scheduledDate The scheduled date of the shipment
  * @param managerId The ID of the manager who created the shipment
+ * @param customerName The name of the customer for this shipment
+ * @param customerPhone The phone number of the customer for this shipment
  */
 public record ShipmentCreatedEvent(
     Long shipmentId,
@@ -19,5 +21,7 @@ public record ShipmentCreatedEvent(
     String description,
     ShipmentStatus status,
     LocalDateTime scheduledDate,
-    Long managerId
+    Long managerId,
+    String customerName,
+    String customerPhone
 ) {}

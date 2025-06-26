@@ -17,7 +17,9 @@ public class ShipmentResourceFromEntityAssembler {
                 entity.getStartedDate(),
                 entity.getCompletedDate(),
                 entity.getManagerId(),
-                entity.getCarrierId()
+                entity.getCarrierId(),
+                entity.getCustomerName(),
+                entity.getCustomerPhone()
         );
     }
 

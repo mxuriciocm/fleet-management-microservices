@@ -40,7 +40,9 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
             savedShipment.getDescription(),
             savedShipment.getStatus(),
             savedShipment.getScheduledDate(),
-            savedShipment.getManagerId()
+            savedShipment.getManagerId(),
+            savedShipment.getCustomerName(),
+            savedShipment.getCustomerPhone()
         );
         eventsPublisher.publishShipmentCreatedEvent(event);
 
@@ -60,6 +62,8 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                     if (command.destination() != null) {shipment.setDestination(command.destination());}
                     if (command.description() != null) {shipment.setDescription(command.description());}
                     if (command.scheduledDate() != null) {shipment.setScheduledDate(command.scheduledDate());}
+                    if (command.customerName() != null) {shipment.setCustomerName(command.customerName());}
+                    if (command.customerPhone() != null) {shipment.setCustomerPhone(command.customerPhone());}
 
                     var updatedShipment = shipmentRepository.save(shipment);
 
@@ -70,7 +74,9 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                         command.description(),
                         null, // No se actualiza el estado
                         command.scheduledDate(),
-                        null // No se actualiza el transportista
+                        null, // No se actualiza el transportista
+                        command.customerName(),
+                        command.customerPhone()
                     );
                     eventsPublisher.publishShipmentUpdatedEvent(event);
 
@@ -96,9 +102,11 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                         updatedShipment.getId(),
                         null, // No se actualiza el destino
                         null, // No se actualiza la descripción
-                        null, // No se actualiza el estado
+                        updatedShipment.getStatus(), // Incluir estado actualizado (ASSIGNED)
                         null, // No se actualiza la fecha programada
-                        carrierId
+                        carrierId,
+                        null, // No se actualizan datos del cliente
+                        null  // No se actualizan datos del cliente
                     );
                     eventsPublisher.publishShipmentUpdatedEvent(event);
 
@@ -123,9 +131,11 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                         updatedShipment.getId(),
                         null,  // No se actualiza el destino
                         null,  // No se actualiza la descripción
-                        null,  // No se actualiza el estado
+                        updatedShipment.getStatus(), // Incluir estado actualizado (vuelve a PENDING)
                         null,  // No se actualiza la fecha programada
-                        null   // El transportista ha sido eliminado (null)
+                        null,  // El transportista ha sido eliminado (null)
+                        null,  // No se actualizan datos del cliente
+                        null   // No se actualizan datos del cliente
                     );
                     eventsPublisher.publishShipmentUpdatedEvent(event);
 
@@ -153,7 +163,9 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                         null,  // No se actualiza la descripción
                         status,
                         null,  // No se actualiza la fecha programada
-                        null   // No se actualiza el transportista
+                        null,  // No se actualiza el transportista
+                        null,  // No se actualizan datos del cliente
+                        null   // No se actualizan datos del cliente
                     );
                     eventsPublisher.publishShipmentUpdatedEvent(event);
 
@@ -180,7 +192,9 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                         null, // No se actualiza la descripción
                         ShipmentStatus.IN_PROGRESS,
                         null, // No se actualiza la fecha programada
-                        null  // No se actualiza el transportista
+                        null, // No se actualiza el transportista
+                        null, // No se actualizan datos del cliente
+                        null  // No se actualizan datos del cliente
                     );
                     eventsPublisher.publishShipmentUpdatedEvent(event);
 
@@ -207,7 +221,9 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                         null, // No se actualiza la descripción
                         ShipmentStatus.COMPLETED,
                         null, // No se actualiza la fecha programada
-                        null  // No se actualiza el transportista
+                        null, // No se actualiza el transportista
+                        null, // No se actualizan datos del cliente
+                        null  // No se actualizan datos del cliente
                     );
                     eventsPublisher.publishShipmentUpdatedEvent(event);
 
@@ -234,7 +250,9 @@ public class ShipmentCommandServiceImpl implements ShipmentCommandService {
                         null, // No se actualiza la descripción
                         ShipmentStatus.CANCELLED,
                         null, // No se actualiza la fecha programada
-                        null  // No se actualiza el transportista
+                        null, // No se actualiza el transportista
+                        null, // No se actualizan datos del cliente
+                        null  // No se actualizan datos del cliente
                     );
                     eventsPublisher.publishShipmentUpdatedEvent(event);
 
