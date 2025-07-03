@@ -14,12 +14,10 @@
     <description>Payments and Subscriptions Service</description>
     <properties>
         <java.version>17</java.version>
-        <!-- 1. Anula la versión de Spring Boot a una compatible -->
-        <spring-boot.version>3.3.1</spring-boot.version>
-        <spring-cloud.version>2023.0.2</spring-cloud.version>
+        <!-- Las versiones de Spring Boot y Cloud deben ser gestionadas en el POM padre para evitar conflictos -->
     </properties>
     <dependencies>
-        <!-- Dependencias comunes y necesarias para payments-service -->
+        <!-- Tus dependencias aquí... -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -45,8 +43,6 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.6.0</version>
         </dependency>
-
-        <!-- Dependencias específicas de payments-service -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
@@ -56,8 +52,6 @@
             <artifactId>checkout-sdk</artifactId>
             <version>2.0.0</version>
         </dependency>
-
-        <!-- Dependencias de base de datos y herramientas -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
@@ -68,8 +62,6 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
-        <!-- Dependencias de Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -87,46 +79,15 @@
         </dependency>
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- 2. Importa el BOM de Spring Boot para forzar la versión correcta -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <!-- La sección dependencyManagement debe estar en el POM padre, no en el módulo -->
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
+            <!-- ELIMINA EL PLUGIN 'maven-compiler-plugin' DE AQUÍ -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <!-- 3. Asegúrate de que el plugin de boot use la versión correcta -->
-                <version>${spring-boot.version}</version>
+                <!-- La versión es heredada del padre -->
                 <configuration>
                     <excludes>
                         <exclude>
