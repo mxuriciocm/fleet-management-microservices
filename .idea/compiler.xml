@@ -8,22 +8,71 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="eureka-service" />
-        <module name="gateway-service" />
+        <module name="config-service (1)" />
         <module name="config-service" />
+        <module name="gateway-service (1)" />
+        <module name="gateway-service" />
+        <module name="eureka-service (1)" />
+        <module name="payments-service" />
       </profile>
       <profile name="Annotation profile for SpringMicroservices" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
+        </processorPath>
+        <module name="payments-service (1)" />
+        <module name="vehicles-service (1)" />
+        <module name="profiles-service (1)" />
+        <module name="issues-service (1)" />
+        <module name="iam-service (1)" />
+        <module name="shipments-service (1)" />
+      </profile>
+      <profile name="Annotation profile for iam-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="iam-service" />
-        <module name="shipments-service" />
+      </profile>
+      <profile name="Annotation profile for issues-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
         <module name="issues-service" />
-        <module name="vehicles-service" />
+      </profile>
+      <profile name="Annotation profile for profiles-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
         <module name="profiles-service" />
+      </profile>
+      <profile name="Annotation profile for shipments-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="shipments-service" />
+      </profile>
+      <profile name="Annotation profile for vehicles-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="vehicles-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -34,13 +83,23 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="analytics-service" options="-parameters" />
       <module name="config-service" options="-parameters" />
+      <module name="config-service (1)" options="-parameters" />
       <module name="eureka-service" options="-parameters" />
+      <module name="eureka-service (1)" options="-parameters" />
       <module name="gateway-service" options="-parameters" />
+      <module name="gateway-service (1)" options="-parameters" />
       <module name="iam-service" options="-parameters" />
+      <module name="iam-service (1)" options="-parameters" />
       <module name="issues-service" options="-parameters" />
+      <module name="issues-service (1)" options="-parameters" />
+      <module name="payments-service" options="-parameters" />
+      <module name="payments-service (1)" options="-parameters" />
       <module name="profiles-service" options="-parameters" />
+      <module name="profiles-service (1)" options="-parameters" />
       <module name="shipments-service" options="-parameters" />
+      <module name="shipments-service (1)" options="-parameters" />
       <module name="vehicles-service" options="-parameters" />
+      <module name="vehicles-service (1)" options="-parameters" />
     </option>
   </component>
 </project>
