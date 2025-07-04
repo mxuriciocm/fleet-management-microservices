@@ -37,10 +37,10 @@ eureka:
     prefer-ip-address: true
 
 paypal:
-  client-id: ${PAYPAL_CLIENT_ID:your-paypal-client-id}
-  client-secret: ${PAYPAL_CLIENT_SECRET:your-paypal-client-secret}
+  client-id: ${PAYPAL_CLIENT_ID:AV-cxvG7fkey7BID_IFyb9Kc6QVvnJpjKGMWXXHwpRIA_Isylj0dwrfnBavKgLKtn96tiKQzDY9ztrug}
+  client-secret: ${PAYPAL_CLIENT_SECRET:ECFGoKRAwEcz7p3VqC9koQgBmsqtEaO0hbEvMU8UIgemTTnQa0pP1aI6CdTzKU55k8wrMRcTcJ2HPH-G}
   mode: ${PAYPAL_MODE:sandbox}
-  webhook-id: ${PAYPAL_WEBHOOK_ID:your-webhook-id}
+  webhook-id: ${PAYPAL_WEBHOOK_ID:http://127.0.0.1:4040 }
 
 management:
   endpoints:
