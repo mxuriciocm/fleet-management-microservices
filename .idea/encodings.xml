@@ -7,13 +7,10 @@
     <file url="file://$PROJECT_DIR$/gateway-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/iam-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/issues-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/payments-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/profiles-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/shipments-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/vehicles-service/src/main/java" charset="UTF-8" />
-    <file url="file://$APPLICATION_HOME_DIR$/bin/src/main/java" charset="UTF-8" />
-    <file url="file://$APPLICATION_HOME_DIR$/bin/src/main/resources" charset="UTF-8" />
   </component>
 </project>
