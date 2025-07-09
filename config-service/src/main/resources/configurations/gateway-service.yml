@@ -1,0 +1,138 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: iam-authentication
+              uri: lb://iam-service
+              predicates:
+                - Path=/api/v1/authentication/**
+              filters:
+                - RewritePath=/api/v1/authentication/(?<segment>.*), /api/v1/authentication/$\{segment}
+
+            - id: iam-users
+              uri: lb://iam-service
+              predicates:
+                - Path=/api/v1/users/**
+              filters:
+                - RewritePath=/api/v1/users/(?<segment>.*), /api/v1/users/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_ADMIN
+                      - ROLE_MANAGER
+
+            - id: iam-carriers-signup
+              uri: lb://iam-service
+              predicates:
+                - Path=/api/v1/carriers/sign-up
+              filters:
+                - RewritePath=/api/v1/carriers/(?<segment>.*), /api/v1/carriers/$\{segment}
+
+            - id: iam-roles
+              uri: lb://iam-service
+              predicates:
+                - Path=/api/v1/roles/**
+              filters:
+                - RewritePath=/api/v1/roles/(?<segment>.*), /api/v1/roles/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_ADMIN
+                      - ROLE_MANAGER
+
+            - id: profiles-service
+              uri: lb://profiles-service
+              predicates:
+                - Path=/api/v1/profiles/**
+              filters:
+                - RewritePath=/api/v1/profiles/(?<segment>.*), /api/v1/profiles/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_CARRIER
+                      - ROLE_MANAGER
+                      - ROLE_ADMIN
+
+            - id: vehicles-service
+              uri: lb://vehicles-service
+              predicates:
+                - Path=/api/v1/vehicles/**
+              filters:
+                - RewritePath=/api/v1/vehicles/(?<segment>.*), /api/v1/vehicles/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_CARRIER
+                      - ROLE_MANAGER
+                      - ROLE_ADMIN
+
+            - id: issues-service
+              uri: lb://issues-service
+              predicates:
+                - Path=/api/v1/issues/**
+              filters:
+                - RewritePath=/api/v1/issues/(?<segment>.*), /api/v1/issues/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_CARRIER
+                      - ROLE_MANAGER
+                      - ROLE_ADMIN
+
+            - id: shipments-service
+              uri: lb://shipments-service
+              predicates:
+                - Path=/api/v1/shipments/**
+              filters:
+                - RewritePath=/api/v1/shipments/(?<segment>.*), /api/v1/shipments/$\{segment}
+                - name: RoleAuthorizationFilter
+                  args:
+                    roles:
+                      - ROLE_CARRIER
+                      - ROLE_MANAGER
+                      - ROLE_ADMIN
+
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders:
+                  - "*"
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin
+
+logging:
+  level:
+    com.gateway.service.filter: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG
+
+authorization:
+  jwt:
+    secret: ${JWT_SECRET:WriteHereYourSecretStringForTokenSigningCredentials}
+  routes:
+    public-paths: /api/v1/authentication/**,/api/v1/carriers/sign-up,/actuator/**,/v3/api-docs/**,/swagger-ui/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

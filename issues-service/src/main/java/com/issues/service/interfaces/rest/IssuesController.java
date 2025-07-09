@@ -20,8 +20,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +32,6 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/issues", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Issues", description = "Issues Management Endpoints")
 public class IssuesController {
-    private static final Logger log = LoggerFactory.getLogger(IssuesController.class);
 
     private final IssueCommandService issueCommandService;
     private final IssueQueryService issueQueryService;
@@ -48,11 +45,6 @@ public class IssuesController {
         this.eventsConsumer = eventsConsumer;
     }
 
-    /**
-     * Create a new issue.
-     * @param resource the resource containing the issue details
-     * @return ResponseEntity with the created issue resource
-     */
     @PostMapping
     @Operation(summary = "Create a new issue")
     @ApiResponses(value = {
@@ -66,33 +58,21 @@ public class IssuesController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Verificar que el usuario es un CARRIER
         if (!hasRole(request, "CARRIER")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        // Obtener el managerId para el carrier
         Long managerId = eventsConsumer.getManagerForCarrier(carrierId);
-
         if (managerId == null) {
-            log.warn("No se pudo determinar el manager para el carrier {}. El carrier debe estar asignado a un vehículo primero.", carrierId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        // Obtener el vehicleId automáticamente si la incidencia es de tipo VEHICLE
         Long vehicleId = null;
         if (resource.type() == IssueType.VEHICLE) {
-            // Obtenemos el vehicleId a partir del carrierId usando el mapa carrierVehicleMap
             vehicleId = eventsConsumer.getVehicleIdForCarrier(carrierId);
-
             if (vehicleId == null) {
-                log.warn("No se pudo determinar el vehículo para el carrier {} y la incidencia es de tipo VEHICLE", carrierId);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             }
-
-            log.info("Asignando automáticamente vehicleId {} para incidencia de tipo VEHICLE del carrier {}", vehicleId, carrierId);
         }
 
         var command = CreateIssueCommandFromResourceAssembler.toCommandFromResource(resource, carrierId, managerId, vehicleId);
@@ -101,11 +81,6 @@ public class IssuesController {
         return ResponseEntity.status(HttpStatus.CREATED).body(issueResource);
     }
 
-    /**
-     * Get an issue by its ID.
-     * @param issueId the ID of the issue to retrieve
-     * @return ResponseEntity with the issue resource if found, or appropriate error status
-     */
     @GetMapping("/{issueId}")
     @Operation(summary = "Get an issue by ID")
     @ApiResponses(value = {
@@ -123,10 +98,6 @@ public class IssuesController {
         return ResponseEntity.ok(IssueResourceFromEntityAssembler.toResourceFromEntity(issue));
     }
 
-    /**
-     * Get all issues created by the authenticated carrier.
-     * @return ResponseEntity with a list of issue resources if found, or no content status
-     */
     @GetMapping("/carrier/issues")
     @Operation(summary = "Get all issues created by the authenticated carrier")
     @ApiResponses(value = {
@@ -144,11 +115,6 @@ public class IssuesController {
         return ResponseEntity.ok(resources);
     }
 
-    /**
-     * Get all issues created by a specific carrier.
-     * @param carrierId the ID of the carrier whose issues to retrieve
-     * @return ResponseEntity with a list of issue resources if found, or appropriate error status
-     */
     @GetMapping("/carrier/{carrierId}")
     @Operation(summary = "Get all issues created by a specific carrier")
     @ApiResponses(value = {
@@ -160,13 +126,8 @@ public class IssuesController {
                                                                   HttpServletRequest request) {
         Long userId = getUserIdFromRequest(request);
         if (userId == null) { return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); }
-        // Solo un ADMIN o el propio CARRIER pueden acceder a sus issues
-        // o un MANAGER que gestiona a ese CARRIER (en este caso, necesitamos mantener una vista local con esta info)
-        if (!hasRole(request, "ADMIN") && 
+        if (!hasRole(request, "ADMIN") &&
             !(hasRole(request, "CARRIER") && userId.equals(carrierId))) {
-            // Verificar si es un manager que gestiona a este carrier
-            // Esto requeriría una consulta a una vista local que mantenga esta relación
-            // Por ahora, simplemente rechazamos si no es ADMIN o el propio CARRIER
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         var issues = issueQueryService.handle(new GetIssuesByCarrierIdQuery(carrierId));
@@ -175,11 +136,6 @@ public class IssuesController {
         return ResponseEntity.ok(resources);
     }
 
-    /**
-     * Get all issues created by a specific manager.
-     * @param managerId the ID of the manager whose issues to retrieve
-     * @return ResponseEntity with a list of issue resources if found, or appropriate error status
-     */
     @GetMapping("/manager/{managerId}")
     @Operation(summary = "Get all issues created by a specific manager")
     @ApiResponses(value = {
@@ -201,11 +157,6 @@ public class IssuesController {
         return ResponseEntity.ok(resources);
     }
 
-    /**
-     * Get all issues by type.
-     * @param type the type of issues to retrieve
-     * @return ResponseEntity with a list of issue resources if found, or appropriate error status
-     */
     @GetMapping("/type/{type}")
     @Operation(summary = "Get all issues by type")
     @ApiResponses(value = {
@@ -227,12 +178,6 @@ public class IssuesController {
         return ResponseEntity.ok(resources);
     }
 
-    /**
-     * Update an existing issue.
-     * @param issueId the ID of the issue to update
-     * @param resource the UpdateIssueResource containing the updated issue data
-     * @return ResponseEntity containing the updated IssueResource if successful, or an error response
-     */
     @PutMapping(value = "/{issueId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update an existing issue")
     @ApiResponses(value = {
@@ -259,11 +204,6 @@ public class IssuesController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Delete an issue.
-     * @param issueId the ID of the issue to delete
-     * @return ResponseEntity indicating success or failure
-     */
     @DeleteMapping("/{issueId}")
     @Operation(summary = "Delete an issue")
     @ApiResponses(value = {
@@ -285,9 +225,6 @@ public class IssuesController {
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    /**
-     * Extract user ID from request headers set by the gateway
-     */
     private Long getUserIdFromRequest(HttpServletRequest request) {
         String userIdHeader = request.getHeader("X-User-Id");
         if (userIdHeader != null && !userIdHeader.isEmpty()) {
@@ -300,9 +237,6 @@ public class IssuesController {
         return null;
     }
 
-    /**
-     * Check if the user has a specific role from the roles header set by the gateway
-     */
     private boolean hasRole(HttpServletRequest request, String role) {
         String rolesHeader = request.getHeader("X-User-Roles");
         if (rolesHeader != null && !rolesHeader.isEmpty()) {
@@ -318,9 +252,6 @@ public class IssuesController {
         return false;
     }
 
-    /**
-     * Check if the user can access a specific issue based on their role and the issue's owners
-     */
     private boolean canAccessIssue(HttpServletRequest request, Long issueCarrierId, Long issueManagerId) {
         Long userId = getUserIdFromRequest(request);
         if (userId == null) { return false; }
