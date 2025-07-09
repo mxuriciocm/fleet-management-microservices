@@ -1,0 +1,183 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fleet-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: mauriciochacon
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmauriciochacon"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fleet-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      timeout: 30s
+      retries: 10
+      interval: 10s
+      start_period: 60s
+
+  config-service:
+    image: mxuriciocm/fleet-management-microservices-config-service:latest
+    container_name: fleet-config-service
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      timeout: 10s
+      retries: 15
+      interval: 10s
+      start_period: 30s
+
+  eureka-service:
+    image: mxuriciocm/fleet-management-microservices-eureka-service:latest
+    container_name: fleet-eureka-service
+    environment:
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      config-service:
+        condition: service_healthy
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      timeout: 10s
+      retries: 15
+      interval: 10s
+      start_period: 60s
+
+  iam-service:
+    image: mxuriciocm/fleet-management-microservices-iam-service:latest
+    container_name: fleet-iam-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+
+  profiles-service:
+    image: mxuriciocm/fleet-management-microservices-profiles-service:latest
+    container_name: fleet-profiles-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  vehicles-service:
+    image: mxuriciocm/fleet-management-microservices-vehicles-service:latest
+    container_name: fleet-vehicles-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8095:8095"
+    restart: unless-stopped
+
+  shipments-service:
+    image: mxuriciocm/fleet-management-microservices-shipments-service:latest
+    container_name: fleet-shipments-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8070:8070"
+    restart: unless-stopped
+
+  issues-service:
+    image: mxuriciocm/fleet-management-microservices-issues-service:latest
+    container_name: fleet-issues-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8096:8096"
+    restart: unless-stopped
+
+  gateway-service:
+    image: mxuriciocm/fleet-management-microservices-gateway-service:latest
+    container_name: fleet-gateway-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+      iam-service:
+        condition: service_started
+      profiles-service:
+        condition: service_started
+      vehicles-service:
+        condition: service_started
+      shipments-service:
+        condition: service_started
+      issues-service:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
