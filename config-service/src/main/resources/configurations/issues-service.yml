@@ -6,7 +6,7 @@ spring:
     name: issues-service
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/issues_db?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://mysql:3306/issues_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: mauriciochacon
   jpa:
@@ -58,10 +58,10 @@ spring:
           environment:
             spring:
               rabbitmq:
-                host: localhost
+                host: rabbitmq
                 port: 5672
-                username: guest
-                password: guest
+                username: admin
+                password: admin123
       rabbit:
         bindings:
           userCreatedEvent-in-0:
@@ -86,8 +86,27 @@ spring:
               requeue-rejected: false
 
 eureka:
-  instance:
-    hostname: localhost
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-service:8761/eureka/
+  instance:
+    prefer-ip-address: false
+    hostname: issues-service
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    defaults:
+      enabled: true

@@ -21,8 +21,8 @@
         </processorPath>
         <module name="iam-service" />
         <module name="shipments-service" />
-        <module name="issues-service" />
         <module name="vehicles-service" />
+        <module name="issues-service" />
         <module name="profiles-service" />
       </profile>
     </annotationProcessing>
